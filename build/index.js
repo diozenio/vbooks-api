@@ -18,6 +18,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+app.use(express_1.default.json());
 const prisma = new client_1.PrismaClient({
     log: ['query']
 });
@@ -34,9 +35,64 @@ app.get("/user/:id/info", (req, res) => __awaiter(void 0, void 0, void 0, functi
     });
     res.json(user);
 }));
-app.post('/a', function (req, res) {
-    res.send(req.body);
-});
+app.post("/user", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const body = req.body;
+    try {
+        const findEmail = yield prisma.user.findMany({
+            where: {
+                email: body.email
+            }
+        });
+        if (findEmail.length) {
+            res.status(500).send(false);
+        }
+        else {
+            const user = yield prisma.user.create({
+                data: {
+                    email: body.email,
+                    nome: body.email,
+                    senha: body.email,
+                }
+            });
+            res.status(201).send(true);
+        }
+    }
+    catch (_a) {
+        res.status(500).send(false);
+    }
+}));
+app.post("/user/:id/favs/new", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.id;
+    const body = req.body;
+    try {
+        const livro = yield prisma.favoritos.create({
+            data: {
+                livroId: body.livroId,
+                userId,
+            }
+        });
+        res.status(201).send(true);
+    }
+    catch (_b) {
+        res.status(500).send(false);
+    }
+}));
+app.delete("/user/:id/favs/delete", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.id;
+    const body = req.body;
+    try {
+        const livro = yield prisma.favoritos.deleteMany({
+            where: {
+                livroId: body.livroId,
+                userId
+            }
+        });
+        res.status(200).send(true);
+    }
+    catch (_c) {
+        res.status(500).send(false);
+    }
+}));
 app.get("/user/:id/favs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     const favoritos = yield prisma.favoritos.findMany({
