@@ -127,6 +127,8 @@ app.get("/book/info/:id", async (req, res) => {
     res.json(livro);
 });
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server listening on http://localhost:${process.env.PORT}/`);
+const port = process.env.PORT || 8000;
+
+app.listen(port, () => {
+    console.log(`Server listening on http://localhost:${port}/`);
 })
