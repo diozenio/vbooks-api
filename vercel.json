@@ -5,5 +5,9 @@
             "src": "./build/index.js",
             "use": "@vercel/node"
         }
-    ]
+    ],
+    "routes": {
+        "src": "./build/(.*)",
+        "dest": "/"
+    }
 }
