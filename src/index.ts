@@ -18,37 +18,64 @@ app.get("/", (req, res) => {
 });
 
 app.get("/user/:id/info", async (req, res) => {
-    const id = req.params.id;
-    const user = await prisma.user.findUnique({
-        where: {
-            id,
+    try {
+        const id = req.params.id;
+        const user = await prisma.user.findUniqueOrThrow({
+            where: {
+                id,
+            }
+        })
+        res.json(user);
+    } catch (error) {
+        return res.send({ "error": error });
+    }
+
+});
+
+app.post("/login", async (req, res) => {
+    try {
+        console.log(req.body);
+        
+        const email = req.body.email;
+        const senha = req.body.senha;
+
+        const user = await prisma.user.findUniqueOrThrow({
+            where: {
+                email,
+            }
+        })
+
+        if (user.senha == senha) {
+            res.json(user);
+        } else {
+            return res.send({ "error": "Credenciais incorretas" });
         }
-    })
-    res.json(user);
+    } catch (error) {
+        return res.send({ "error": error });
+    }
+
 });
 
 app.post("/user", async (req, res) => {
     const body: any = req.body;
+    console.log(body);
     try {
-        const findEmail = await prisma.user.findMany({
+        const findEmail = await !prisma.user.findFirstOrThrow({
             where: {
                 email: body.email
             }
         })
 
-        if (findEmail.length) {
-            res.status(500).send(false);
-        } else {
-            const user = await prisma.user.create({
-                data: {
-                    email: body.email,
-                    nome: body.email,
-                    senha: body.email,
-                }
-            })
+        const user = await prisma.user.create({
+            data: {
+                email: body.email,
+                nome: body.email,
+                senha: body.email,
+            }
+        })
 
-            res.status(201).send(true);
-        }
+        res.status(201).send(true);
+
     } catch {
         res.status(500).send(false);
     }
@@ -88,43 +115,55 @@ app.delete("/user/:id/favs/delete", async (req, res) => {
 
 
 app.get("/user/:id/favs", async (req, res) => {
-    const id = req.params.id;
-    const favoritos = await prisma.favoritos.findMany({
-        where: {
-            userId: id,
-        },
-        select: {
-            livroId: true,
-        }
-    })
-
-    let livros: Array<any> = [];
-
-    for (let x: number = 0; x < favoritos.length; x++) {
-        const livro = await prisma.livro.findUnique({
+    try {
+        const id = req.params.id;
+        const favoritos = await prisma.favoritos.findMany({
             where: {
-                id: favoritos[x].livroId
+                userId: id,
+            },
+            select: {
+                livroId: true,
             }
         })
-        livros.push(livro);
-    }
 
-    res.json(livros);
+        let livros: Array<any> = [];
+
+        for (let x: number = 0; x < favoritos.length; x++) {
+            const livro = await prisma.livro.findUnique({
+                where: {
+                    id: favoritos[x].livroId
+                }
+            })
+            livros.push(livro);
+        }
+
+        res.json(livros);
+    } catch (error) {
+        return res.send({ "error": error });
+    }
 });
 
 app.get("/books", async (req, res) => {
-    const livros = await prisma.livro.findMany()
-    res.json(livros);
+    try {
+        const livros = await prisma.livro.findMany()
+        res.json(livros);
+    } catch (error) {
+        return res.send({ "error": error });
+    }
 });
 
 app.get("/book/info/:id", async (req, res) => {
-    const id = req.params.id;
-    const livro = await prisma.livro.findUnique({
-        where: {
-            id
-        }
-    })
-    res.json(livro);
+    try {
+        const id = req.params.id;
+        const livro = await prisma.livro.findUniqueOrThrow({
+            where: {
+                id
+            }
+        })
+        res.json(livro);
+    } catch (error) {
+        return res.send({ "error": error });
+    }
 });
 
 const port = process.env.PORT || 8000;
