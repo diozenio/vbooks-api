@@ -56,7 +56,7 @@ app.post("/login", async (req, res) => {
 
 });
 
-app.post("/user", async (req, res) => {
+app.post("/user/create", async (req, res) => {
     const body: any = req.body;
     console.log(body);
     try {
@@ -158,6 +158,22 @@ app.get("/book/info/:id", async (req, res) => {
         const livro = await prisma.livro.findUniqueOrThrow({
             where: {
                 id
+            }
+        })
+        res.json(livro);
+    } catch (error) {
+        return res.send({ "error": error });
+    }
+});
+
+app.get("/book/search/:value", async (req, res) => {
+    try {
+        const value = req.params.value;
+        const livro = await prisma.livro.findMany({
+            where: {
+                titulo: {
+                    contains: value
+                }
             }
         })
         res.json(livro);
