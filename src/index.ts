@@ -146,7 +146,7 @@ app.get("/user/:id/favs", async (req, res) => {
 app.get("/books", async (req, res) => {
     try {
         const livros = await prisma.livro.findMany()
-        res.json(livros);
+        res.status(200).json(livros);
     } catch (error) {
         return res.send({ "error": error });
     }
