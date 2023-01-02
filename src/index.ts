@@ -35,7 +35,7 @@ app.get("/user/:id/info", async (req, res) => {
 app.post("/login", async (req, res) => {
     try {
         console.log(req.body);
-        
+
         const email = req.body.email;
         const senha = req.body.senha;
 
@@ -81,30 +81,38 @@ app.post("/user/create", async (req, res) => {
     }
 })
 
-app.post("/user/:id/favs/new", async (req, res) => {
-    const userId = req.params.id;
+app.post("/favorite/new", async (req, res) => {
     const body = req.body;
+
     try {
-        const livro = await prisma.favoritos.create({
-            data: {
+        const count = await prisma.favoritos.count({
+            where: {
+                userId: body.userId,
                 livroId: body.livroId,
-                userId,
-            }
+            },
         })
-        res.status(201).send(true);
+        if (count > 0) {
+            res.status(500).send(false);
+        } else {
+            const livro = await prisma.favoritos.create({
+                data: {
+                    livroId: body.livroId,
+                    userId: body.userId,
+                }
+            })
+            res.status(201).send(true);
+        }
     } catch {
         res.status(500).send(false);
     }
 });
 
-app.delete("/user/:id/favs/delete", async (req, res) => {
-    const userId = req.params.id;
-    const body = req.body;
+app.post("/favorite/delete", async (req, res) => {
     try {
         const livro = await prisma.favoritos.deleteMany({
             where: {
-                livroId: body.livroId,
-                userId
+                livroId: req.body.livroId,
+                userId: req.body.userId
             }
         })
         res.status(200).send(true);
@@ -112,7 +120,6 @@ app.delete("/user/:id/favs/delete", async (req, res) => {
         res.status(500).send(false);
     }
 });
-
 
 app.get("/user/:id/favs", async (req, res) => {
     try {
